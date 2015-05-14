@@ -1,0 +1,11 @@
+{
+  "name": "localForage-startsWith",
+  "version": "1.0.0",
+  "dependencies": {
+    "then/promise": "5.0.0"
+  },
+  "scripts": [
+    "src/localforage-startsWith.js"
+  ],
+  "main": "src/localforage-startsWith.js"
+}
