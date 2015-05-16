@@ -27,24 +27,22 @@
     }
 
     function localforageStartsWith(prefix, callback) {
-        var promise = localforage.ready().then(function() {
-            var currentDriver = localforage.driver();
+        var localforageInstance = this;
+        var currentDriver = localforageInstance.driver();
 
-            if (currentDriver === localforage.INDEXEDDB) {
-                return startsWithIndexedDB(prefix);
-            } else if (currentDriver === localforage.WEBSQL) {
-                return startsWithWebsql(prefix);
-            } else {
-                return startsWithGeneric(prefix);
-            }
-        });
-        executeCallback(promise, callback);
-        return promise;
+        if (currentDriver === localforageInstance.INDEXEDDB) {
+            return startsWithIndexedDB.call(localforageInstance, prefix, callback);
+        } else if (currentDriver === localforageInstance.WEBSQL) {
+            return startsWithWebsql.call(localforageInstance, prefix, callback);
+        } else {
+            return startsWithGeneric.call(localforageInstance, prefix, callback);
+        }
     }
 
     function startsWithGeneric(prefix, callback) {
+        var localforageInstance = this;
         var promise = new Promise(function(resolve, reject) {
-            localforage.keys().then(function(keys) {
+            localforageInstance.keys().then(function(keys) {
 
                 var itemPromises = [];
 
@@ -53,7 +51,7 @@
                     var key = keys[i];
 
                     if (key.slice(0, prefixLength) === prefix) {
-                        itemPromises.push(getItemKeyValue(key));
+                        itemPromises.push(getItemKeyValue.call(localforageInstance, key));
                     }
                 }
 
@@ -73,10 +71,11 @@
     }
 
     function startsWithIndexedDB(prefix, callback) {
+        var localforageInstance = this;
         var promise = new Promise(function(resolve, reject) {
-            localforage.ready().then(function() {
+            localforageInstance.ready().then(function() {
                 // Thanks https://hacks.mozilla.org/2014/06/breaking-the-borders-of-indexeddb/
-                var dbInfo = localforage._dbInfo;
+                var dbInfo = localforageInstance._dbInfo;
                 var store = dbInfo.db.transaction(dbInfo.storeName, 'readonly')
                             .objectStore(dbInfo.storeName);
 
@@ -116,9 +115,10 @@
     }
 
     function startsWithWebsql(prefix, callback) {
+        var localforageInstance = this;
         var promise = new Promise(function(resolve, reject) {
-            localforage.ready().then(getSerializer).then(function(serializer) {
-                var dbInfo = localforage._dbInfo;
+            localforageInstance.ready().then(getSerializer).then(function(serializer) {
+                var dbInfo = localforageInstance._dbInfo;
                 dbInfo.db.transaction(function(t) {
                     t.executeSql('SELECT * FROM ' + dbInfo.storeName +
                         ' WHERE (key LIKE ?)', [prefix + '%'],
@@ -178,7 +178,8 @@
     }
 
     function getItemKeyValue(key, callback) {
-        var promise = localforage.getItem(key).then(function(value) {
+        var localforageInstance = this;
+        var promise = localforageInstance.getItem(key).then(function(value) {
             return {
                 key: key,
                 value: value
