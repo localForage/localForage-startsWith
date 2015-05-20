@@ -1,10 +1,10 @@
 {
-  "name": "localForage-startsWith",
+  "name": "localforage-startswith",
   "author": "Thodoris Greasidis",
   "description": "Adds startsWith method to localForage.",
   "keywords": [
     "localforage",
-    "sessionstorage"
+    "startsWith"
   ],
   "version": "1.0.0",
   "homepage": "https://github.com/thgreasi/localForage-startsWith",

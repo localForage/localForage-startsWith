@@ -1,6 +1,6 @@
 {
-  "name": "localForage-startsWith",
-  "version": "1.0.0",
+  "name": "localforage-startswith",
+  "version": "1.0.1",
   "main": [
     "src/localforage-startsWith.js"
   ],
