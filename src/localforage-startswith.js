@@ -117,7 +117,9 @@
     function startsWithWebsql(prefix, callback) {
         var localforageInstance = this;
         var promise = new Promise(function(resolve, reject) {
-            localforageInstance.ready().then(getSerializer).then(function(serializer) {
+            localforageInstance.ready().then(function() {
+                return getSerializer(localforageInstance);
+            }).then(function(serializer) {
                 var dbInfo = localforageInstance._dbInfo;
                 dbInfo.db.transaction(function(t) {
                     t.executeSql('SELECT * FROM ' + dbInfo.storeName +
@@ -153,9 +155,15 @@
     }
 
 
-    function getSerializer() {
+    function getSerializer(localforageInstance) {
         if (serializer) {
             return Promise.resolve(serializer);
+        }
+
+        // add support for localforage v1.3.x
+        if (localforageInstance &&
+            typeof localforageInstance.getSerializer === 'function') {
+            return localforageInstance.getSerializer();
         }
 
         var serializerPromise = new Promise(function(resolve/*, reject*/) {
