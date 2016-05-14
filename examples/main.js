@@ -1,4 +1,12 @@
-define(['../bower_components/localforage/dist/localforage', '../src/localforage-startswith'], function(localforage, startsWith) {
+requirejs.config({
+    paths: {
+        localforage: '../node_modules/localforage/dist/localforage'
+    }
+});
+define([
+  'localforage',
+  '../dist/localforage-startswith'
+], function(localforage, startsWith) {
   var driverTestOrder = [
     localforage.WEBSQL,
     localforage.INDEXEDDB,
