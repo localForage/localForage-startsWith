@@ -11,3 +11,18 @@ Adds startsWith method to [localForage](https://github.com/mozilla/localForage).
 
 ## Installation
 `npm i localforage-startswith`
+
+## API
+Retrieves an object with all the items that have keys starting with the provided parameter.
+```js
+localforage.startsWith('user-1').then(function(results) {
+  console.log(results);
+  // prints:
+  // {
+  //   'user-1-todo-1': "11aa1111bbcc",
+  //   'user-1-todo-2': "22aa2222bbcc",
+  //   'user-1-todo-3': "33aa3333bbcc",
+  //   'user-1-todo-4': "44aa4444bbcc"
+  // }
+});
+```
