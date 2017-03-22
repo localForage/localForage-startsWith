@@ -48,7 +48,7 @@ function getIDBKeyRange() {
 
 var idbKeyRange = getIDBKeyRange();
 
-function startsWithIndexedDB(prefix, callback) {
+function startsWith(prefix, callback) {
     var localforageInstance = this;
     var promise = new Promise(function (resolve, reject) {
         localforageInstance.ready().then(function () {
@@ -86,7 +86,56 @@ function startsWithIndexedDB(prefix, callback) {
     return promise;
 }
 
-function startsWithWebsql(prefix, callback) {
+function keysStartingWith(prefix, callback) {
+    var localforageInstance = this;
+    var promise = new Promise(function (resolve, reject) {
+        localforageInstance.ready().then(function () {
+            // Thanks https://hacks.mozilla.org/2014/06/breaking-the-borders-of-indexeddb/
+            var dbInfo = localforageInstance._dbInfo;
+            var store = dbInfo.db.transaction(dbInfo.storeName, 'readonly').objectStore(dbInfo.storeName);
+
+            var keyRangeValue = idbKeyRange.bound(prefix, prefix + 'uffff', false, false);
+
+            var result = [];
+
+            if (typeof store.getAllKeys === 'function') {
+                (function () {
+                    var req = store.getAllKeys(keyRangeValue);
+                    req.onsuccess = function () /*event*/{
+                        resolve(req.result);
+                    };
+
+                    req.onerror = function () /*event*/{
+                        reject(req.error);
+                    };
+                })();
+            } else {
+                (function () {
+                    var req = store.openCursor(keyRangeValue);
+                    req.onsuccess = function () /*event*/{
+                        var cursor = req.result; // event.target.result;
+
+                        if (cursor) {
+                            result.push(cursor.key);
+
+                            cursor.continue();
+                        } else {
+                            resolve(result);
+                        }
+                    };
+
+                    req.onerror = function () /*event*/{
+                        reject(req.error);
+                    };
+                })();
+            }
+        }).catch(reject);
+    });
+    executeCallback(promise, callback);
+    return promise;
+}
+
+function startsWith$1(prefix, callback) {
     var localforageInstance = this;
     var promise = new Promise(function (resolve, reject) {
         localforageInstance.ready().then(function () {
@@ -123,7 +172,35 @@ function startsWithWebsql(prefix, callback) {
     return promise;
 }
 
-function startsWithGeneric(prefix, callback) {
+function keysStartingWith$1(prefix, callback) {
+    var localforageInstance = this;
+    var promise = new Promise(function (resolve, reject) {
+        localforageInstance.ready().then(function () {
+            var dbInfo = localforageInstance._dbInfo;
+            dbInfo.db.transaction(function (t) {
+                t.executeSql('SELECT key FROM ' + dbInfo.storeName + ' WHERE (key LIKE ?)', [prefix + '%'], function (t, results) {
+
+                    var result = [];
+
+                    var rows = results.rows;
+                    for (var i = 0, len = rows.length; i < len; i++) {
+                        var item = rows.item(i);
+
+                        result.push(item.key);
+                    }
+
+                    resolve(result);
+                }, function (t, error) {
+                    reject(error);
+                });
+            });
+        }).catch(reject);
+    });
+    executeCallback(promise, callback);
+    return promise;
+}
+
+function startsWith$2(prefix, callback) {
     var localforageInstance = this;
     var promise = new Promise(function (resolve, reject) {
         localforageInstance.keys().then(function (keys) {
@@ -154,16 +231,52 @@ function startsWithGeneric(prefix, callback) {
     return promise;
 }
 
+function keysStartingWith$2(prefix, callback) {
+    var localforageInstance = this;
+    var promise = new Promise(function (resolve, reject) {
+        localforageInstance.keys().then(function (keys) {
+
+            var result = [];
+
+            var prefixLength = prefix.length;
+            for (var i = 0, len = keys.length; i < len; i++) {
+                var key = keys[i];
+
+                if (key.slice(0, prefixLength) === prefix) {
+                    result.push(key);
+                }
+            }
+
+            resolve(result);
+        }).catch(reject);
+    });
+    executeCallback(promise, callback);
+    return promise;
+}
+
 function localforageStartsWith(prefix, callback) {
     var localforageInstance = this;
     var currentDriver = localforageInstance.driver();
 
     if (currentDriver === localforageInstance.INDEXEDDB) {
-        return startsWithIndexedDB.call(localforageInstance, prefix, callback);
+        return startsWith.call(localforageInstance, prefix, callback);
     } else if (currentDriver === localforageInstance.WEBSQL) {
-        return startsWithWebsql.call(localforageInstance, prefix, callback);
+        return startsWith$1.call(localforageInstance, prefix, callback);
     } else {
-        return startsWithGeneric.call(localforageInstance, prefix, callback);
+        return startsWith$2.call(localforageInstance, prefix, callback);
+    }
+}
+
+function localforageKeysStartingWith(prefix, callback) {
+    var localforageInstance = this;
+    var currentDriver = localforageInstance.driver();
+
+    if (currentDriver === localforageInstance.INDEXEDDB) {
+        return keysStartingWith.call(localforageInstance, prefix, callback);
+    } else if (currentDriver === localforageInstance.WEBSQL) {
+        return keysStartingWith$1.call(localforageInstance, prefix, callback);
+    } else {
+        return keysStartingWith$2.call(localforageInstance, prefix, callback);
     }
 }
 
@@ -171,9 +284,10 @@ function extendPrototype(localforage) {
     var localforagePrototype = Object.getPrototypeOf(localforage);
     if (localforagePrototype) {
         localforagePrototype.startsWith = localforageStartsWith;
+        localforagePrototype.keysStartingWith = localforageKeysStartingWith;
     }
 }
 
 var extendPrototypeResult = extendPrototype(localforage);
 
-export { startsWithGeneric, localforageStartsWith, extendPrototype, extendPrototypeResult };
+export { localforageStartsWith, localforageKeysStartingWith, extendPrototype, extendPrototypeResult, startsWith$2 as startsWithGeneric, keysStartingWith$2 as keysStartingWithGeneric };
