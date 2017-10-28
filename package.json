@@ -1,6 +1,6 @@
 {
   "name": "localforage-startswith",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Adds startsWith method to localForage.",
   "homepage": "https://github.com/thgreasi/localForage-startsWith",
   "main": "dist/localforage-startswith.js",
