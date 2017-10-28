@@ -11,6 +11,8 @@ function getSerializerPromise(localForageInstance) {
     return getSerializerPromise.result;
 }
 
+
+
 function executeCallback(promise, callback) {
     if (callback) {
         promise.then(function (result) {
@@ -99,35 +101,31 @@ function keysStartingWith(prefix, callback) {
             var result = [];
 
             if (typeof store.getAllKeys === 'function') {
-                (function () {
-                    var req = store.getAllKeys(keyRangeValue);
-                    req.onsuccess = function () /*event*/{
-                        resolve(req.result);
-                    };
+                var req = store.getAllKeys(keyRangeValue);
+                req.onsuccess = function () /*event*/{
+                    resolve(req.result);
+                };
 
-                    req.onerror = function () /*event*/{
-                        reject(req.error);
-                    };
-                })();
+                req.onerror = function () /*event*/{
+                    reject(req.error);
+                };
             } else {
-                (function () {
-                    var req = store.openCursor(keyRangeValue);
-                    req.onsuccess = function () /*event*/{
-                        var cursor = req.result; // event.target.result;
+                var _req = store.openCursor(keyRangeValue);
+                _req.onsuccess = function () /*event*/{
+                    var cursor = _req.result; // event.target.result;
 
-                        if (cursor) {
-                            result.push(cursor.key);
+                    if (cursor) {
+                        result.push(cursor.key);
 
-                            cursor.continue();
-                        } else {
-                            resolve(result);
-                        }
-                    };
+                        cursor.continue();
+                    } else {
+                        resolve(result);
+                    }
+                };
 
-                    req.onerror = function () /*event*/{
-                        reject(req.error);
-                    };
-                })();
+                _req.onerror = function () /*event*/{
+                    reject(_req.error);
+                };
             }
         }).catch(reject);
     });
@@ -280,8 +278,8 @@ function localforageKeysStartingWith(prefix, callback) {
     }
 }
 
-function extendPrototype(localforage) {
-    var localforagePrototype = Object.getPrototypeOf(localforage);
+function extendPrototype(localforage$$1) {
+    var localforagePrototype = Object.getPrototypeOf(localforage$$1);
     if (localforagePrototype) {
         localforagePrototype.startsWith = localforageStartsWith;
         localforagePrototype.keysStartingWith = localforageKeysStartingWith;
