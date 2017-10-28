@@ -12,6 +12,18 @@ Adds startsWith method to [localForage](https://github.com/mozilla/localForage).
 ## Installation
 `npm i localforage-startswith`
 
+### Known issues with module bundlers
+In some cases `.startsWith()` might not automatically be made available to the `localforage` object on import. In this case, import the provided `extendPrototype()` method and extend it manually:
+
+```js
+import localforage from 'localforage';
+import { extendPrototype } from 'localforage-startswith';
+
+extendPrototype(localforage);
+
+// Keep using localForage as usual.
+```
+
 ## API
 
 ### startsWith(keyPrefix)
